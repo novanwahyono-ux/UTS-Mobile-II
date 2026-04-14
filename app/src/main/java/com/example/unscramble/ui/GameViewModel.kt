@@ -139,4 +139,13 @@ class GameViewModel : ViewModel() {
             shuffleCurrentWord(currentWord)
         }
     }
+
+    fun resetGame() {
+        usedWords.clear()
+        _uiState.value = GameUiState(
+            currentScrambledWord = pickRandomWordAndShuffle(),
+            lives = 3 // reset nyawa
+        )
+    }
+
 }

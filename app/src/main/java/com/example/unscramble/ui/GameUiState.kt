@@ -24,5 +24,5 @@ data class GameUiState(
     val score: Int = 0,
     val isGuessedWordWrong: Boolean = false,
     val isGameOver: Boolean = false,
-    val lives: int = 3
+    val lives: Int = 3
 )
