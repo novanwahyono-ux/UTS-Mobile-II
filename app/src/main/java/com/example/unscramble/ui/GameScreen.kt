@@ -57,12 +57,32 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unscramble.R
 import com.example.unscramble.ui.theme.UnscrambleTheme
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
 
 @Composable
 fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
     val gameUiState by gameViewModel.uiState.collectAsState()
     val mediumPadding = dimensionResource(R.dimen.padding_medium)
 
+    var showHistory by remember { mutableStateOf(false) }
+
+    //  SWITCH SCREEN DI SINI (PALING ATAS)
+    if (showHistory) {
+        HistoryScreen(
+            gameViewModel = gameViewModel, //  BENAR
+            onBack = { showHistory = false }
+        )
+        return
+    }
+
+    // GAME UI
     Column(
         modifier = Modifier
             .statusBarsPadding()
@@ -77,6 +97,7 @@ fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
             text = stringResource(R.string.app_name),
             style = typography.titleLarge,
         )
+
         GameLayout(
             onUserGuessChanged = { gameViewModel.updateUserGuess(it) },
             wordCount = gameUiState.currentWordCount,
@@ -89,6 +110,7 @@ fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
                 .wrapContentHeight()
                 .padding(mediumPadding)
         )
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -101,24 +123,28 @@ fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { gameViewModel.checkUserGuess() }
             ) {
-                Text(
-                    text = stringResource(R.string.submit),
-                    fontSize = 16.sp
-                )
+                Text(stringResource(R.string.submit))
+            }
+
+            Button(
+                onClick = { showHistory = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("History")
             }
 
             OutlinedButton(
                 onClick = { gameViewModel.skipWord() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = stringResource(R.string.skip),
-                    fontSize = 16.sp
-                )
+                Text(stringResource(R.string.skip))
             }
         }
 
-        GameStatus(score = gameUiState.score, modifier = Modifier.padding(20.dp))
+        GameStatus(
+            score = gameUiState.score,
+            modifier = Modifier.padding(20.dp)
+        )
 
         if (gameUiState.isGameOver) {
             FinalScoreDialog(
@@ -181,10 +207,6 @@ fun GameLayout(
             Text(
                 text = stringResource(R.string.instructions),
                 textAlign = TextAlign.Center,
-                style = typography.titleMedium
-            )
-            Text(
-                text = "Lives: ${gameUiState.lives}",
                 style = typography.titleMedium
             )
             OutlinedTextField(
@@ -261,3 +283,5 @@ fun GameScreenPreview() {
         GameScreen()
     }
 }
+
+

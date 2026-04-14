@@ -45,6 +45,9 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application) // merah
     private val dao = db.wordHistoryDao()
 
+    val historyList = dao.getAllHistory()
+
+
     var userGuess by mutableStateOf("")
         private set
 
