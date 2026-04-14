@@ -68,22 +68,28 @@ class GameViewModel : ViewModel() {
      * Increases the score accordingly.
      */
     fun checkUserGuess() {
-        if (userGuess.equals(currentWord, ignoreCase = true)) {
-            // User's guess is correct, increase the score
-            // and call updateGameState() to prepare the game for next round
-            val updatedScore = _uiState.value.score.plus(SCORE_INCREASE)
-            updateGameState(updatedScore)
-        } else {
-            // User's guess is wrong, show an error
-            _uiState.update { currentState ->
-                currentState.copy(isGuessedWordWrong = true)
-            }
-        }
-        // Reset user guess
-        updateUserGuess("")
-    }
+        if (_uiState.value.userGuess.equals(currentWord, ignoreCase = true)) {
 
-    /*
+            val updatedScore = _uiState.value.score + 10
+            updateGameState(updatedScore)
+
+        } else {
+            val currentLives = _uiState.value.lives - 1
+
+            if (currentLives <= 0) {
+                // Kehibisan Kesempatan
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isGuessedWordWrong = true,
+                        lives = 0,
+                        isGameOver = true
+                    )
+                }
+            } else {
+                // masih ada nyawang
+
+
+                /*
      * Skip to next word
      */
     fun skipWord() {
@@ -144,7 +150,7 @@ class GameViewModel : ViewModel() {
         usedWords.clear()
         _uiState.value = GameUiState(
             currentScrambledWord = pickRandomWordAndShuffle(),
-            lives = 3 // reset nyawa
+            lives = 3
         )
     }
 
