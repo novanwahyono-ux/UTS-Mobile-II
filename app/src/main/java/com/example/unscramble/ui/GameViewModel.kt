@@ -27,15 +27,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import com.example.unscramble.data.AppDatabase
+import com.example.unscramble.data.WordHistory
 
 /**
  * ViewModel containing the app data and methods to process the data
  */
-class GameViewModel : ViewModel() {
+class GameViewModel(application: Application): AndroidViewModel(application) {
 
     // Game UI state
     private val _uiState = MutableStateFlow(GameUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
+    private val db = AppDatabase.getDatabase(application) // merah
+    private val dao = db.wordHistoryDao()
 
     var userGuess by mutableStateOf("")
         private set
@@ -68,16 +76,21 @@ class GameViewModel : ViewModel() {
      * Increases the score accordingly.
      */
     fun checkUserGuess() {
-        if (_uiState.value.userGuess.equals(currentWord, ignoreCase = true)) {
+        if (userGuess.equals(currentWord, ignoreCase = true)) {
 
-            val updatedScore = _uiState.value.score + 10
+            //  SIMPAN KE DATABASE
+            viewModelScope.launch {
+                dao.insertWord(WordHistory(word = currentWord)) //merah
+            }
+
+            val updatedScore = _uiState.value.score + SCORE_INCREASE
             updateGameState(updatedScore)
 
         } else {
             val currentLives = _uiState.value.lives - 1
 
             if (currentLives <= 0) {
-                // Kehibisan Kesempatan
+                //  GAME OVER
                 _uiState.update { currentState ->
                     currentState.copy(
                         isGuessedWordWrong = true,
@@ -86,7 +99,19 @@ class GameViewModel : ViewModel() {
                     )
                 }
             } else {
-                // masih ada nyawang
+                // ❌ SALAH TAPI MASIH HIDUP
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isGuessedWordWrong = true,
+                        lives = currentLives
+                    )
+                }
+            }
+        }
+
+        // reset input
+        updateUserGuess("")
+    }
 
 
                 /*
@@ -144,14 +169,6 @@ class GameViewModel : ViewModel() {
             usedWords.add(currentWord)
             shuffleCurrentWord(currentWord)
         }
-    }
-
-    fun resetGame() {
-        usedWords.clear()
-        _uiState.value = GameUiState(
-            currentScrambledWord = pickRandomWordAndShuffle(),
-            lives = 3
-        )
     }
 
 }
