@@ -183,6 +183,10 @@ fun GameLayout(
                 textAlign = TextAlign.Center,
                 style = typography.titleMedium
             )
+            Text(
+                text = "Lives: ${gameUiState.lives}",
+                style = typography.titleMedium
+            )
             OutlinedTextField(
                 value = userGuess,
                 singleLine = true,
